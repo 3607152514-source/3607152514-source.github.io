@@ -525,7 +525,7 @@ async function sendMessage() {
   say(
     "你：" +
       msg +
-      "\\n\\n小黑猫：" +
+      "\n\n小黑猫：" +
       replies[Math.floor(Math.random() * replies.length)]
   );
 
@@ -537,7 +537,7 @@ async function sendMessage() {
       },
       body: JSON.stringify({
         content:
-          "🐈‍⬛ 她对小黑猫说：\\n> " +
+          "🐈‍⬛ 她对小黑猫说：\n> " +
           msg
       })
     });
@@ -619,7 +619,7 @@ async function sendMessage() {
     }
 
     function heartExplosion() {
-      for (let i = 0; i < 120; i++) {
+      for (let i = 0; i < 1200; i++) {
         setTimeout(() => {
           const heart = document.createElement("div");
           heart.className = "heart";
@@ -632,7 +632,7 @@ async function sendMessage() {
             ? (-20 - Math.random() * 120) + "px"
             : (window.innerHeight + Math.random() * 120) + "px";
 
-          heart.style.fontSize = (18 + Math.random() * 34) + "px";
+          heart.style.fontSize = (18 + Math.random() * 70) + "px";
           heart.style.transition = "transform 2s ease-out, opacity 2s ease-out";
 
           document.body.appendChild(heart);
@@ -644,8 +644,8 @@ async function sendMessage() {
             heart.style.opacity = "0";
           });
 
-          setTimeout(() => heart.remove(), 2200);
-        }, i * 12);
+          setTimeout(() => heart.remove(), 6600);
+        }, i * 5);
       }
     }
 
