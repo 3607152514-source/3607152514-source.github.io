@@ -639,9 +639,12 @@ function heartExplosion() {
     setTimeout(() => {
       const row = document.createElement("div");
 
-      row.textContent =
-        "💕 💖 💗 💞 ❤ ♡ 💘 ".repeat(10);
+      const hearts = ["💕","💖","💗","💞","❤","♡","💘","💓"];
 
+row.textContent = Array.from(
+  { length: 18 },
+  () => hearts[Math.floor(Math.random() * hearts.length)]
+).join(" ");
       row.style.opacity = "0";
       row.style.transform = "scale(0.7)";
       row.style.transition =
