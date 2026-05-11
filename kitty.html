@@ -289,7 +289,6 @@
         <button onclick="dailyCheckIn()" id="checkBtn">⭐ 每日签到</button>
         <button class="special" onclick="secret()">💌 偷偷说一句话</button>
         <button onclick="randomEvent()">🎲 随机事件</button>
-        <button class="danger" onclick="resetGame()">↺ 重置</button>
       </div>
 
       <div class="chat-box">
@@ -626,7 +625,7 @@ function heartExplosion() {
   layer.style.pointerEvents = "none";
   document.body.appendChild(layer);
 
-  for (let i = 0; i < 800; i++) {
+  for (let i = 0; i < 300; i++) {
     const heart = document.createElement("div");
     heart.textContent = random(["♡", "❤", "💕", "💗", "💖", "💞", "💘"]);
     heart.style.position = "absolute";
