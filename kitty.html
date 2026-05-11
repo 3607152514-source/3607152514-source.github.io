@@ -623,29 +623,32 @@ function heartExplosion() {
   layer.style.inset = "0";
   layer.style.zIndex = "9999";
   layer.style.pointerEvents = "none";
+  layer.style.fontSize = "42px";
+  layer.style.lineHeight = "1.05";
+  layer.style.wordBreak = "break-all";
+  layer.style.overflow = "hidden";
+  layer.style.opacity = "0";
+  layer.style.transition = "opacity 0.25s ease";
+
+  layer.innerText = "💕 💖 💗 💞 ❤ ♡ 💘 ".repeat(420);
+
   document.body.appendChild(layer);
 
-  for (let i = 0; i < 100; i++) {
-    const heart = document.createElement("div");
-    heart.textContent = random(["♡", "❤", "💕", "💗", "💖", "💞", "💘"]);
-    heart.style.position = "absolute";
-    heart.style.left = Math.random() * 100 + "vw";
-    heart.style.top = Math.random() * 100 + "vh";
-    heart.style.fontSize = (40 + Math.random() * 90) + "px";
-    heart.style.opacity = "0.95";
-    heart.style.transform = `rotate(${Math.random() * 360}deg)`;
-    heart.style.animation = "none";
+  requestAnimationFrame(() => {
+    layer.style.opacity = "1";
+  });
 
-    layer.appendChild(heart);
-  }
+  setTimeout(() => {
+    layer.style.opacity = "0";
+  }, 1800);
+
+  setTimeout(() => {
+    layer.remove();
+  }, 2400);
+}
 
   setTimeout(() => layer.remove(), 5000);
-}
-    function resetGame() {
-      if (!confirm("确定要重置小黑猫的数据吗？")) return;
-      localStorage.removeItem("blackKittyGame");
-      location.reload();
-    }
+
 
     function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
