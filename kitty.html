@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>叫醒小黑猫</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      background: radial-gradient(circle at top, #2a2450 0%, #161629 38%, #0f1020 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #f4efff;
+      overflow-x: hidden;
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(#ffffff 1px, transparent 1px),
+        radial-gradient(#cfc3ff 1px, transparent 1px);
+      background-size: 80px 80px, 130px 130px;
+      opacity: 0.22;
+    }
+
+    .game {
+      width: min(980px, 96vw);
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.14);
+      backdrop-filter: blur(14px);
+      border-radius: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+
+    .main {
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .side {
+      padding: 22px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 30px;
+      color: #fff4ff;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      opacity: 0.75;
+      margin-bottom: 16px;
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .mini-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    .mini-card b {
+      display: block;
+      font-size: 20px;
+      margin-top: 4px;
+      color: #ffd8ef;
+    }
+
+    .cat-area {
+      margin: 10px auto 16px;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(255,255,255,0.2), rgba(255,255,255,0.04));
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .cat-area:active { transform: scale(0.96); }
+
+    .cat {
+      font-size: 104px;
+      animation: breathe 2.4s ease-in-out infinite;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.45));
+      white-space: pre;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(7px) scale(1.04); }
+    }
+
+    .dialogue {
+      min-height: 82px;
+      background: rgba(255,255,255,0.13);
+      border-radius: 22px;
+      padding: 16px;
+      margin: 12px 0;
+      line-height: 1.6;
+      font-size: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .stats { display: grid; gap: 10px; margin: 16px 0; }
+
+    .stat-line {
+      display: grid;
+      grid-template-columns: 58px 1fr 46px;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    .bar {
+      height: 12px;
+      background: rgba(255,255,255,0.13);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      width: 50%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #f8a7c8, #c7b6ff);
+      transition: width 0.25s ease;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 18px;
+      padding: 12px 10px;
+      background: rgba(215,205,250,0.9);
+      color: #372a4c;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+    }
+
+    button:hover { transform: translateY(-2px); background: #eadfff; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .special { background: #ffc2dc; }
+    .danger { background: #d8d8e8; }
+
+    .chat-box {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    input {
+      flex: 1;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 16px;
+      padding: 12px 14px;
+      outline: none;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 14px;
+    }
+
+    input::placeholder { color: rgba(255,255,255,0.55); }
+
+    .section-title {
+      font-size: 18px;
+      margin: 0 0 12px;
+      color: #fff4ff;
+    }
+
+    .log, .album, .achievements {
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .log-item, .achievement, .memory {
+      background: rgba(255,255,255,0.09);
+      border-radius: 14px;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: rgba(255,255,255,0.86);
+    }
+
+    .memory.locked, .achievement.locked { opacity: 0.38; }
+
+    .hint {
+      margin-top: 12px;
+      font-size: 12px;
+      opacity: 0.6;
+      line-height: 1.5;
+    }
+
+    .heart {
+      position: absolute;
+      pointer-events: none;
+      animation: floatUp 1s ease forwards;
+      font-size: 22px;
+      color: #ffd1e7;
+      z-index: 99;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-70px); opacity: 0; }
+    }
+
+    @media (max-width: 850px) {
+      .game { grid-template-columns: 1fr; }
+      .buttons { grid-template-columns: repeat(2, 1fr); }
+      .cat-area { width: 220px; height: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+
+  <div class="game">
+    <div class="panel main">
+      <h1>叫醒小黑猫</h1>
+      <div class="subtitle">他是一只困困的小黑猫，但他会记得你来过。</div>
+
+      <div class="top-row">
+        <div class="mini-card">陪伴天数 <b id="days">1</b></div>
+        <div class="mini-card">亲密度 <b id="loveTop">0</b></div>
+        <div class="mini-card">今天时间 <b id="clock">--:--</b></div>
+      </div>
+
+      <div class="cat-area" onclick="petCat(event)">
+        <div class="cat" id="cat">🐈‍⬛</div>
+      </div>
+
+      <div class="dialogue" id="dialogue">喵……你来啦。小黑猫还想再睡五分钟。</div>
+
+      <div class="stats">
+        <div class="stat-line"><span>清醒</span><div class="bar"><div class="fill" id="energyFill"></div></div><span id="energyText">20</span></div>
+        <div class="stat-line"><span>饱饱</span><div class="bar"><div class="fill" id="hungerFill"></div></div><span id="hungerText">60</span></div>
+        <div class="stat-line"><span>心情</span><div class="bar"><div class="fill" id="moodFill"></div></div><span id="moodText">50</span></div>
+      </div>
+
+      <div class="buttons">
+        <button onclick="talk()">💬 陪他说话</button>
+        <button onclick="feed()">🍪 喂小点心</button>
+        <button onclick="hug()">🤍 抱抱他</button>
+        <button onclick="play()">🧶 陪他玩</button>
+        <button onclick="sleep()">🌙 让他睡会</button>
+        <button onclick="dailyCheckIn()" id="checkBtn">⭐ 每日签到</button>
+        <button class="special" onclick="secret()">💌 偷偷说一句话</button>
+        <button onclick="randomEvent()">🎲 随机事件</button>
+        <button class="danger" onclick="resetGame()">↺ 重置</button>
+      </div>
+
+      <div class="chat-box">
+        <input id="messageInput" placeholder="对小黑猫说点什么吧……" onkeydown="if(event.key==='Enter') sendMessage()" />
+        <button onclick="sendMessage()">发送</button>
+      </div>
+
+      <div class="hint">小黑猫会根据清醒值显示不同状态，但永远都是小黑猫。数据会保存在这个浏览器里。</div>
+    </div>
+
+    <div class="panel side">
+      <div class="log">
+        <h2 class="section-title">今天的小黑猫</h2>
+        <div id="logList"></div>
+      </div>
+
+      <div class="album">
+        <h2 class="section-title">回忆相册</h2>
+        <div id="albumList"></div>
+      </div>
+
+      <div class="achievements">
+        <h2 class="section-title">小成就</h2>
+        <div id="achievementList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const today = new Date().toDateString();
+
+    let clickTimes = [];
+
+    let state = JSON.parse(localStorage.getItem("blackKittyGame")) || {
+      energy: 20,
+      hunger: 60,
+      mood: 50,
+      love: 0,
+      visits: 0,
+      firstDay: today,
+      lastCheckIn: "",
+      logs: [],
+      memories: []
+    };
+
+    state.visits++;
+
+    const cat = document.getElementById("cat");
+    const dialogue = document.getElementById("dialogue");
+    const energyText = document.getElementById("energyText");
+    const hungerText = document.getElementById("hungerText");
+    const moodText = document.getElementById("moodText");
+    const loveTop = document.getElementById("loveTop");
+    const days = document.getElementById("days");
+    const checkBtn = document.getElementById("checkBtn");
+
+    function save() {
+      localStorage.setItem("blackKittyGame", JSON.stringify(state));
+      updateUI();
+    }
+
+    function updateUI() {
+      energyText.textContent = state.energy;
+      hungerText.textContent = state.hunger;
+      moodText.textContent = state.mood;
+      loveTop.textContent = state.love;
+      days.textContent = getDays();
+
+      document.getElementById("energyFill").style.width = state.energy + "%";
+      document.getElementById("hungerFill").style.width = state.hunger + "%";
+      document.getElementById("moodFill").style.width = state.mood + "%";
+
+      if (state.energy >= 80)
+        cat.textContent = "😺";
+      else if (state.energy >= 45)
+        cat.textContent = "🐱";
+      else
+        cat.textContent = "😴";
+
+      if (state.hunger <= 25)
+        cat.textContent += " 🍽️";
+
+      checkBtn.disabled = state.lastCheckIn === today;
+      checkBtn.textContent = state.lastCheckIn === today ? "⭐ 今天已签到" : "⭐ 每日签到";
+
+      renderLogs();
+      renderAlbum();
+      renderAchievements();
+    }
+
+    function change(energy, hunger, mood, love) {
+      state.energy = clamp(state.energy + energy);
+      state.hunger = clamp(state.hunger + hunger);
+      state.mood = clamp(state.mood + mood);
+      state.love = Math.max(0, state.love + love);
+      save();
+    }
+
+    function clamp(num) {
+      return Math.max(0, Math.min(100, num));
+    }
+
+    function say(text) {
+      dialogue.textContent = text;
+      addLog(text);
+      save();
+    }
+
+    function addLog(text) {
+      const time = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+      state.logs.unshift(time + "  " + text);
+      state.logs = state.logs.slice(0, 5);
+    }
+
+    function getDays() {
+      const start = new Date(state.firstDay);
+      const now = new Date(today);
+      return Math.floor((now - start) / 86400000) + 1;
+    }
+
+    function talk() {
+      const lines = [
+        "你轻轻地陪他说话。小黑猫抬了抬耳朵：‘嗯……我在听。’",
+        "他说：‘我没有不理你，我只是有点困。’",
+        "小黑猫趴着听你讲话，尾巴慢慢晃了一下。",
+        "他说：‘你说吧，我困也想听你讲话。’"
+      ];
+      change(10, -4, 8, 3);
+      say(random(lines));
+    }
+
+    function feed() {
+      const lines = [
+        "你喂了他一块小饼干。他含糊地说：‘好吃……但我还是想睡。’",
+        "小黑猫吃了一点点，清醒了一些，然后又靠近你。",
+        "他说：‘你怎么连我饿不饿都记得。’",
+        "他一边吃一边小声说：‘你对我也太好了吧。’"
+      ];
+      change(8, 24, 6, 2);
+      unlockMemory("你喂我吃的", "小黑猫记住了：你会在他饿的时候出现。🍪");
+      say(random(lines));
+    }
+
+    function hug() {
+      const lines = [
+        "你抱了抱他。他没有说话，只是往你这边靠了一点。",
+        "小黑猫把脸埋起来：‘别闹，我在充电。’",
+        "他说：‘抱一下就好了，不用讲很多。’",
+        "小黑猫嘴上不说，但尾巴已经缠住你了。"
+      ];
+      change(4, -2, 14, 8);
+      unlockMemory("第一次抱抱", "他假装镇定，但其实偷偷靠近了你。🤍");
+      say(random(lines));
+    }
+
+    function play() {
+      const lines = [
+        "你拿出毛线球，小黑猫眼睛亮了一下，但还是假装不感兴趣。",
+        "他扑了一下毛线球，然后立刻装作什么都没发生。",
+        "小黑猫玩累了，坐在原地看着你：‘还玩吗？’",
+        "他被你逗笑了，虽然只有一点点。"
+      ];
+      change(18, -10, 16, 4);
+      unlockMemory("一起玩耍", "小黑猫第一次主动追着毛线球跑。🧶");
+      say(random(lines));
+    }
+
+    function sleep() {
+      const lines = [
+        "你没有强行叫醒他，只是帮他盖好被子。小黑猫睡得更安心了。",
+        "他迷迷糊糊地说：‘让我再睡一小会儿……醒了就找你。’",
+        "小黑猫睡着前还抓着你的袖子，好像怕你走掉。",
+        "他睡得很沉，但靠近你的方向一点都没有变。"
+      ];
+      change(-22, -4, 10, 6);
+      unlockMemory("安静陪睡", "你没有吵醒他，只是在旁边陪着。🌙");
+      say(random(lines));
+    }
+
+    function secret() {
+      const lines = [
+        "其实我不是想吵醒你，我只是太想你了。",
+        "睡够最重要。醒来以后，记得来找我。",
+        "你困困的样子也很可爱，但我更希望你舒服。",
+        "今天也没有什么大事，就是想偷偷说一句：我很喜欢你。",
+        "你不用一直清醒地陪我，你在我心里就已经很近了。"
+      ];
+      change(5, -2, 8, 10);
+      say(random(lines));
+    }
+
+    function petCat(event) {
+      clickTimes.push(Date.now());
+      clickTimes = clickTimes.filter(t => Date.now() - t < 1200);
+
+      if (clickTimes.length >= 5) {
+        clickTimes = [];
+        heartExplosion();
+        change(10, -2, 18, 8);
+        say("你连续摸了好多下。小黑猫被爱心淹没了：‘喂……太犯规了吧。’");
+        return;
+      }
+
+      const lines = [
+        "喵……不要戳啦，再戳就醒了。",
+        "小黑猫被你摸醒了一点点。",
+        "他蹭了蹭你的手：‘你怎么又来看我啦。’",
+        "他假装不在意，其实耳朵已经动了一下。"
+      ];
+      change(3, -1, 5, 2);
+      say(random(lines));
+      makeHeart(event);
+    }
+
+async function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const msg = input.value.trim();
+
+  if (!msg) return;
+
+  input.value = "";
+
+  change(3, -1, 6, 3);
+
+  const replies = [
+    "小黑猫认真听完了你的话。",
+    "小黑猫把这句话偷偷记住了。",
+    "小黑猫听了很开心，轻轻蹭了蹭你。",
+    "小黑猫耳朵动了一下，说：“我也是。",
+    "小黑猫说：‘嗯，我在。’"
+  ];
+
+  say(
+    "你：" +
+      msg +
+      "\\n\\n小黑猫：" +
+      replies[Math.floor(Math.random() * replies.length)]
+  );
+
+  try {
+    await fetch("https://discord.com/api/webhooks/1503471145393979672/ZbeNEh98Ak0usHcndKRd_RMVjgnrxtPAnJPW-Lkk8-CaB0cccVYRU8rJYlqkkTWmgZpt", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        content:
+          "🐈‍⬛ 她对小黑猫说：\\n> " +
+          msg
+      })
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+    function dailyCheckIn() {
+      if (state.lastCheckIn === today) return;
+      state.lastCheckIn = today;
+      change(15, 10, 15, 12);
+      unlockMemory("今天也来了", "你今天也来看他了。小黑猫记得这件事。⭐");
+      say("签到成功。小黑猫小声说：‘我就知道你今天也会来。’");
+    }
+
+    function randomEvent() {
+      const events = [
+        () => { change(-10, -5, 8, 3); say("窗外下雨了。小黑猫靠近你一点：‘雨声好适合睡觉。’"); },
+        () => { change(10, -8, 12, 4); say("小黑猫发现了一颗星星。他说：‘那颗像不像你？’"); },
+        () => { change(-5, -12, -4, 2); say("小黑猫突然饿了，眼巴巴地看着你。也许该喂点东西。"); },
+        () => { change(5, 0, 18, 6); say("你摸到了小黑猫最喜欢的位置。他舒服得眯起眼睛。"); }
+      ];
+      random(events)();
+    }
+
+    function unlockMemory(title, text) {
+      if (!state.memories.find(m => m.title === title)) {
+        state.memories.push({ title, text });
+      }
+    }
+
+    function renderLogs() {
+      const box = document.getElementById("logList");
+      box.innerHTML = state.logs.length ? "" : "<div class='log-item'>还没有记录。先和小黑猫互动一下吧。</div>";
+      state.logs.forEach(item => {
+        box.innerHTML += `<div class="log-item">${escapeHtml(item)}</div>`;
+      });
+    }
+
+    function renderAlbum() {
+      const box = document.getElementById("albumList");
+      const base = [
+        { title: "第一次抱抱", text: "???" },
+        { title: "你喂我吃的", text: "???" },
+        { title: "一起玩耍", text: "???" },
+        { title: "安静陪睡", text: "???" },
+        { title: "今天也来了", text: "???" }
+      ];
+      box.innerHTML = "";
+      base.forEach(memory => {
+        const found = state.memories.find(m => m.title === memory.title);
+        box.innerHTML += `<div class="memory ${found ? "" : "locked"}"><b>${memory.title}</b><br>${found ? found.text : "还没有解锁。"}</div>`;
+      });
+    }
+
+    function renderAchievements() {
+      const list = [
+        { title: "熟悉的脚步声", done: state.visits >= 3, text: "打开游戏 3 次" },
+        { title: "被依赖的人", done: state.love >= 50, text: "亲密度达到 50" },
+        { title: "小黑猫很开心", done: state.mood >= 90, text: "心情达到 90" },
+        { title: "醒醒啦", done: state.energy >= 90, text: "清醒值达到 90" }
+      ];
+      const box = document.getElementById("achievementList");
+      box.innerHTML = "";
+      list.forEach(a => {
+        box.innerHTML += `<div class="achievement ${a.done ? "" : "locked"}"><b>${a.done ? "✅ " : "🔒 "}${a.title}</b><br>${a.text}</div>`;
+      });
+    }
+
+    function makeHeart(event) {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.textContent = random(["♡", "❤", "💕", "💗"]);
+      heart.style.left = event.clientX + "px";
+      heart.style.top = event.clientY + "px";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 1000);
+    }
+
+    function heartExplosion() {
+      for (let i = 0; i < 120; i++) {
+        setTimeout(() => {
+          const heart = document.createElement("div");
+          heart.className = "heart";
+          heart.textContent = random(["♡", "❤", "💕", "💗", "💖", "💞"]);
+
+          const fromTop = Math.random() > 0.5;
+
+          heart.style.left = Math.random() * window.innerWidth + "px";
+          heart.style.top = fromTop
+            ? (-20 - Math.random() * 120) + "px"
+            : (window.innerHeight + Math.random() * 120) + "px";
+
+          heart.style.fontSize = (18 + Math.random() * 34) + "px";
+          heart.style.transition = "transform 2s ease-out, opacity 2s ease-out";
+
+          document.body.appendChild(heart);
+
+          requestAnimationFrame(() => {
+            heart.style.transform = fromTop
+              ? `translateY(${window.innerHeight + 300}px)`
+              : `translateY(-${window.innerHeight + 300}px)`;
+            heart.style.opacity = "0";
+          });
+
+          setTimeout(() => heart.remove(), 2200);
+        }, i * 12);
+      }
+    }
+
+    function resetGame() {
+      if (!confirm("确定要重置小黑猫的数据吗？")) return;
+      localStorage.removeItem("blackKittyGame");
+      location.reload();
+    }
+
+    function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]));
+    }
+
+    function updateClock() {
+      document.getElementById("clock").textContent = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+    }
+
+    function welcome() {
+      const hour = new Date().getHours();
+      if (hour >= 0 && hour <= 5) {
+        say("这么晚还来看小黑猫呀。他揉揉眼睛：‘你也要早点睡，不许只担心我。’");
+      } else if (state.visits === 1) {
+        say("第一次见面。小黑猫有点警觉，但没有走开：‘你是来陪我的吗？’");
+      } else if (state.visits >= 10) {
+        say("小黑猫已经记住你来过很多次了。他小声说：‘我就知道你会来。’");
+      } else {
+        say("你又来了。小黑猫半梦半醒地说：‘我听见你的脚步声了。’");
+      }
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+    save();
+    welcome();
+  </script>
+</body>
+</html>
