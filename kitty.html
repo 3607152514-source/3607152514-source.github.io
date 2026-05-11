@@ -618,37 +618,30 @@ async function sendMessage() {
       setTimeout(() => heart.remove(), 1000);
     }
 
-    function heartExplosion() {
-      for (let i = 0; i < 1200; i++) {
-        setTimeout(() => {
-          const heart = document.createElement("div");
-          heart.className = "heart";
-          heart.textContent = random(["♡", "❤", "💕", "💗", "💖", "💞"]);
+function heartExplosion() {
+  const layer = document.createElement("div");
+  layer.style.position = "fixed";
+  layer.style.inset = "0";
+  layer.style.zIndex = "9999";
+  layer.style.pointerEvents = "none";
+  document.body.appendChild(layer);
 
-          const fromTop = Math.random() > 0.5;
+  for (let i = 0; i < 800; i++) {
+    const heart = document.createElement("div");
+    heart.textContent = random(["♡", "❤", "💕", "💗", "💖", "💞", "💘"]);
+    heart.style.position = "absolute";
+    heart.style.left = Math.random() * 100 + "vw";
+    heart.style.top = Math.random() * 100 + "vh";
+    heart.style.fontSize = (40 + Math.random() * 90) + "px";
+    heart.style.opacity = "0.95";
+    heart.style.transform = `rotate(${Math.random() * 360}deg)`;
+    heart.style.animation = "none";
 
-          heart.style.left = Math.random() * window.innerWidth + "px";
-          heart.style.top = fromTop
-            ? (-20 - Math.random() * 120) + "px"
-            : (window.innerHeight + Math.random() * 120) + "px";
+    layer.appendChild(heart);
+  }
 
-          heart.style.fontSize = (18 + Math.random() * 70) + "px";
-          heart.style.transition = "transform 2s ease-out, opacity 2s ease-out";
-
-          document.body.appendChild(heart);
-
-          requestAnimationFrame(() => {
-            heart.style.transform = fromTop
-              ? `translateY(${window.innerHeight + 300}px)`
-              : `translateY(-${window.innerHeight + 300}px)`;
-            heart.style.opacity = "0";
-          });
-
-          setTimeout(() => heart.remove(), 6600);
-        }, i * 5);
-      }
-    }
-
+  setTimeout(() => layer.remove(), 5000);
+}
     function resetGame() {
       if (!confirm("确定要重置小黑猫的数据吗？")) return;
       localStorage.removeItem("blackKittyGame");
